@@ -40,7 +40,12 @@ CONFIG_GOOGLE = None;
 if os.path.exists(os.path.expandvars("$HOME/.google.json")):
     CONFIG_GOOGLE = json.loads(open(os.path.expandvars("$HOME/.google.json"), "r").read());
 
-package.install_from_path(os.path.expandvars("$HOME/desenv/nocopyright/data/") + 'translate-en_pb-1_9.argosmodel');
+ARGOS_DIR = os.path.expandvars("$HOME/tmp/argos/");
+models = os.listdir( ARGOS_DIR );
+for model in models:
+    if model.find(".argosmodel") < 0:
+        continue;
+    package.install_from_path( os.path.join( ARGOS_DIR, model  ) );
 installed_languages = translate.get_installed_languages();
 print( "Tradução disponível para: ", [str(lang) for lang in installed_languages] );
 
@@ -163,12 +168,12 @@ class Video:
             os.unlink("/tmp/"+ self.id +".txt");
 
     def to_mp4(self, delete_mkv=False):
-        path_mp4 = os.path.join( self.path_dir_saida, self.filename) + ".mp4";
+        path_mp4 = os.path.join(self.directory, self.filename) + ".mp4";
         print("\033[91mMP4: ", path_mp4, "\033[0m");
-        if os.path.exists(self.path_final_video) and not os.path.exists(path_mp4):
-            os.system("ffmpeg -i '"+ self.path_final_video +"' '"+ path_mp4 + "' > /dev/null 2>&1" ) ;
-        if delete_mkv == True and os.path.exists(self.path_final_video):
-            os.unlink( self.path_final_video );
+        if os.path.exists( os.path.join(self.directory, self.filename + ".mkv")   ) and not os.path.exists(path_mp4):
+            os.system("ffmpeg -i '"+ os.path.join(self.directory, self.filename + ".mkv") +"' '"+ path_mp4 + "' > /dev/null 2>&1" ) ;
+        if delete_mkv == True and os.path.exists(os.path.join(self.directory, self.filename + ".mkv")):
+            os.unlink( os.path.join(self.directory, self.filename + ".mkv") );
 
     @staticmethod
     def load(project, path_dir, legenda_none=True):

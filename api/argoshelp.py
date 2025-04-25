@@ -12,8 +12,11 @@ INDEX_JSON = os.path.join(os.path.expandvars("$HOME/desenv/nocopyright/data/"), 
 with open(INDEX_JSON) as index_file:
     index = json.load(index_file)
     for metadata in index:
-        if os.path.exists( os.path.join( DOWNLOAD_DIR, metadata["code"] + ".argosmodel" ) ):
+        model_path = os.path.join( DOWNLOAD_DIR, metadata["code"] + ".argosmodel" );
+        print(model_path);
+        if os.path.exists( model_path ) :
             continue;
         links = metadata["links"]
         link = links[0]
-        subprocess.run(["wget", link, "-P", DOWNLOAD_DIR])
+        subprocess.run(["wget", "-O", model_path , link, "-P", DOWNLOAD_DIR])
+        #/home/uell/tmp/argos/translate-th_en-1_9.argosmodel
