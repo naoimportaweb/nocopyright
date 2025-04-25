@@ -34,6 +34,7 @@ class Project():
                 try:
                     if video.existe():
                         continue;
+                    video.start();
                     self.videos.append(video);
                 except KeyboardInterrupt:
                     exit(1)

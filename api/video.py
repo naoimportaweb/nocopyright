@@ -40,14 +40,14 @@ CONFIG_GOOGLE = None;
 if os.path.exists(os.path.expandvars("$HOME/.google.json")):
     CONFIG_GOOGLE = json.loads(open(os.path.expandvars("$HOME/.google.json"), "r").read());
 
-ARGOS_DIR = os.path.expandvars("$HOME/tmp/argos/");
-models = os.listdir( ARGOS_DIR );
-for model in models:
-    if model.find(".argosmodel") < 0:
-        continue;
-    package.install_from_path( os.path.join( ARGOS_DIR, model  ) );
-installed_languages = translate.get_installed_languages();
-print( "Tradução disponível para: ", [str(lang) for lang in installed_languages] );
+#ARGOS_DIR = os.path.expandvars("$HOME/tmp/argos/");
+#models = os.listdir( ARGOS_DIR );
+#for model in models:
+#    if model.find(".argosmodel") < 0:
+#        continue;
+#    package.install_from_path( os.path.join( ARGOS_DIR, model  ) );
+#installed_languages = translate.get_installed_languages();
+#print( "Tradução disponível para: ", [str(lang) for lang in installed_languages] );
 
 class Video:
     def __init__(self, project, path_video):
@@ -70,7 +70,10 @@ class Video:
         self.THREADS_TRADUTOR_MAX       = 10;
         self.THREADS_TTS_CONTADOR       =  0;
         self.THREADS_TTS_MAX            = 10;
-        
+    
+    def start(self):
+        print("Iniciando variaveis.....");
+    
     def existe(self):
         for language in self.project.languages:
             dir_final = os.path.join( self.directory, language["directory"] );
@@ -247,7 +250,7 @@ class Legenda:
         #    )
         #)
         #argostranslate.package.install_from_path(package_to_install.download())
-        print(self.texto, from_code, to_code);
+        #print(self.texto, from_code, to_code);
         self.traducoes[to_language["language"]] = argostranslate.translate.translate(self.texto, from_code, to_code)
         return self.traducoes[to_language["language"]];
         # '¡Hola Mundo!'
