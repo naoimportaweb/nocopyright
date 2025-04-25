@@ -234,14 +234,14 @@ class Legenda:
     def translate(self, from_language, to_language):
         from_code = from_language;
         to_code = to_language["language"]
-        argostranslate.package.update_package_index()
-        available_packages = argostranslate.package.get_available_packages()
-        package_to_install = next(
-            filter(
-                lambda x: x.from_code == from_code and x.to_code == to_code, available_packages
-            )
-        )
-        argostranslate.package.install_from_path(package_to_install.download())
+        #argostranslate.package.update_package_index()
+        #available_packages = argostranslate.package.get_available_packages()
+        #package_to_install = next(
+        #    filter(
+        #        lambda x: x.from_code == from_code and x.to_code == to_code, available_packages
+        #    )
+        #)
+        #argostranslate.package.install_from_path(package_to_install.download())
         print(self.texto, from_code, to_code);
         self.traducoes[to_language["language"]] = argostranslate.translate.translate(self.texto, from_code, to_code)
         return self.traducoes[to_language["language"]];
