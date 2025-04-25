@@ -6,6 +6,8 @@ import threading, argostranslate
 
 #           VOICES              
 #https://huggingface.co/hexgrad/Kokoro-82M/blob/main/VOICES.md#italian
+#           TRANSLATE ARGOS MODELS
+#https://github.com/argosopentech/argospm-index?tab=readme-ov-file
 
 from kokoro import KPipeline
 from IPython.display import display, Audio
