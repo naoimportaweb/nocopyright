@@ -1,7 +1,8 @@
-import os, sys, traceback;
-import threading, time, json;
+import os, sys, traceback, time;
+import threading, time, json, argostranslate;
 
 from pathlib import Path
+from argostranslate import package, translate
 
 ROOT = os.path.expandvars("$HOME/desenv/nocopyright/");
 sys.path.append(ROOT);
@@ -16,6 +17,16 @@ class VideoUdemy(Video):
     def __init__(self, path_video, legenda=None):
         super().__init__(path_video, legenda=legenda);
 
+
+ARGOS_DIR = os.path.expandvars("$HOME/tmp/argos/");
+#models = os.listdir( ARGOS_DIR );
+#for model in models:
+#    if model.find(".argosmodel") < 0:
+#        continue;
+#    package.install_from_path( os.path.join( ARGOS_DIR, model  ) );
+#installed_languages = translate.get_installed_languages();
+#print( "Tradução disponível para: ", [str(lang) for lang in installed_languages] );
+
 class Project():
     def __init__(self, path_directory):
         self.path_directory = path_directory;
@@ -23,7 +34,9 @@ class Project():
         self.name = None;
         self.language = None;
         self.languages = [];
-        
+        self.installed_languages = None;
+        self.active = True;
+        self.max_threads = 2;
     def find_videos(self):
         self.videos = [];
         diretorios = diretorios_recursivos( self.path_directory );
@@ -45,8 +58,39 @@ class Project():
         self.language   = buffer["language"];
         self.name       = buffer["name"];
         self.languages  = buffer["languages"];
-        self.find_videos();
-        buffer = None;
+        if buffer.get("max_threads") != None:
+            self.max_threads     = buffer["max_threads"];
+        else:
+            self.max_threads     = 2;
+        if buffer.get("effects") != None:
+            self.active     = buffer["active"];
+        else:
+            self.active     = False;
+        if buffer.get("effects") != None:
+            self.effects    = buffer["effects"];
+        else:
+            self.effects    = [];
+        if self.active == True:
+            for language_buffer in self.languages:
+                if self.language != language_buffer["language"]:
+                    if self.language == "en" or language_buffer["language"] == "en":
+                        path_model = os.path.join( ARGOS_DIR, "translate-"+ self.language +"_"+ language_buffer["language"] +".argosmodel"  );
+                        if os.path.exists(path_model):
+                            package.install_from_path( path_model );
+                            print("\033[92m", "Model carregado:",path_model , "\033[0m");
+                    else:
+                        path_model = os.path.join( ARGOS_DIR, "translate-en_"+ language_buffer["language"] +".argosmodel"  );
+                        if os.path.exists(path_model):
+                            package.install_from_path( path_model );
+                            print("\033[92m", "Model carregado:",path_model , "\033[0m");
+                        path_model = os.path.join( ARGOS_DIR, "translate-"+ self.language +"_en.argosmodel"  );
+                        if os.path.exists(path_model):
+                            package.install_from_path( path_model );
+                            print("\033[92m", "Model carregado:",path_model , "\033[0m");
+            self.installed_languages = translate.get_installed_languages();
+            print( "Tradução disponível para: ", [str(lang) for lang in self.installed_languages] );
+            self.find_videos();
+            buffer = None;
 
 def diretorios_recursivos(diretorio ):
     lista = [];
@@ -61,14 +105,17 @@ def diretorios_recursivos(diretorio ):
             lista = lista + diretorios_recursivos(path_buffer);
     return lista;
 
-def novo_projeto(diretorio):
+def novo_projeto(diretorio, transcribe, translate, make):
     print(diretorio);
     p = Project(diretorio);
     p.start();
     try:
         for buffer in p.videos:
+            #if transcribe:
             buffer.legendar();
+            #if translate:
             buffer.translate();
+            #if make:
             buffer.make_video();
             buffer.to_mp4(delete_mkv=False);
     finally:
@@ -76,17 +123,23 @@ def novo_projeto(diretorio):
             buffer.clear();
 
 while True:
-    threads_list = [];
-    for raiz in raizes:
-        diretorios = os.listdir( raiz );
-        for diretorio in diretorios:
-            if os.path.exists( os.path.join( raiz, diretorio, "project.json" ) ):
-                project_thread = threading.Thread(target=novo_projeto, args=(os.path.join( raiz, diretorio ),))
-                project_thread.start();
-                threads_list.append( project_thread );
-    for project_thread in threads_list:
-        project_thread.join();
-    break;
+    try:
+        threads_list = [];
+        for raiz in raizes:
+            diretorios = os.listdir( raiz );
+            for diretorio in diretorios:
+                if os.path.exists( os.path.join( raiz, diretorio, "project.json" ) ):
+                    project_thread = threading.Thread(target=novo_projeto, args=(os.path.join( raiz, diretorio ), True, True, True,))
+                    project_thread.start();
+                    threads_list.append( project_thread );
+        for project_thread in threads_list:
+            project_thread.join();
+        break;
+    except:
+        print("mais uma volta");
+    finally:
+        print("pausa");
+        time.sleep(120);
 
 
 #def make_video(video):

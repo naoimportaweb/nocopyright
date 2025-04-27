@@ -32,7 +32,7 @@ from argostranslate import package, translate
 
 VIDEOS = [".mkv", ".mp4"];
 LEGENDAS = [".vtt"];
-
+MAX_THREADS = 2;
 if not os.path.exists("/tmp/traducao/"):
     os.makedirs("/tmp/traducao/", exist_ok=True);
 
@@ -40,14 +40,7 @@ CONFIG_GOOGLE = None;
 if os.path.exists(os.path.expandvars("$HOME/.google.json")):
     CONFIG_GOOGLE = json.loads(open(os.path.expandvars("$HOME/.google.json"), "r").read());
 
-#ARGOS_DIR = os.path.expandvars("$HOME/tmp/argos/");
-#models = os.listdir( ARGOS_DIR );
-#for model in models:
-#    if model.find(".argosmodel") < 0:
-#        continue;
-#    package.install_from_path( os.path.join( ARGOS_DIR, model  ) );
-#installed_languages = translate.get_installed_languages();
-#print( "Tradução disponível para: ", [str(lang) for lang in installed_languages] );
+
 
 class Video:
     def __init__(self, project, path_video):
@@ -62,7 +55,6 @@ class Video:
         self.path_final_vtt =   os.path.join( self.directory,  self.filename + ".vtt" );
         #os.makedirs(self.path_dir_saida, exist_ok=True);
         self.tmp_path = "/tmp/file_" + self.id + ".kvm"
-
         cam = cv2.VideoCapture( path_video );
         self.fps = cam.get(cv2.CAP_PROP_FPS);
 
@@ -72,17 +64,23 @@ class Video:
         self.THREADS_TTS_MAX            = 10;
     
     def start(self):
-        print("Iniciando variaveis.....");
-    
-    def existe(self):
+        print("Iniciando:", "\033[97m", self.filename, "\033[0m");
         for language in self.project.languages:
-            dir_final = os.path.join( self.directory, language["directory"] );
-            if not os.path.exists(dir_final):
-                return False;
-            file = os.path.join( dir_final, self.filename + ".mkv");
-            if not os.path.exists(file):
-                return False;
-        return True;
+            path_language = os.path.join( self.directory, language["directory"]);
+            if not os.path.exists(path_language):
+                os.makedirs( path_language , exist_ok=True);  
+    def existe(self):
+        #for language in self.project.languages:
+        #    dir_final = os.path.join( self.directory, language["directory"] );
+        #    if not os.path.exists(dir_final):
+        #        return False;
+        #    file = os.path.join( dir_final, self.filename + ".mkv");
+        #    if os.path.exists(file):
+        #        return True;
+        #    file = os.path.join( dir_final, self.filename + ".mp4");
+        #    if os.path.exists(file):
+        #        return True;
+        return False;
 
     def legendar(self):
         if os.path.exists( self.path_final_vtt ):
@@ -94,7 +92,12 @@ class Video:
 
     def __translate__(self, legenda, to_language):
         try:
+            #if self.project.language == to_language["language"]:
+            #    legenda.traducoes[self.project.language] = legenda.texto;
+            #    print(legenda.texto, end=', ');
+            #    return legenda.texto;
             retorno = legenda.translate( self.project.language, to_language );
+            print(retorno, end=', ');
         except:
             traceback.print_exc();
         finally:
@@ -116,12 +119,19 @@ class Video:
                         semaforo = [];
             for item in semaforo:
                 item.join();
+            for language in self.project.languages:
+                path_legenda = os.path.join( self.directory, language["directory"], self.filename + ".vtt" );
+                if not os.path.exists( path_legenda ):
+                    with open(path_legenda, "w") as f:
+                        for legenda in self.legendas:
+                            f.write( legenda.traducoes[language["language"]] );
+
         except:
             traceback.print_exc();
 
     def __make_video__(self, legenda, to_language ):
         try:
-            retorno = legenda.make_video( self.path_video, to_language ); 
+            retorno = legenda.make_video( self.path_video, to_language, self.project.effects ); 
         except:
             traceback.print_exc();
         finally:
@@ -134,14 +144,34 @@ class Video:
                 file_final = os.path.join( self.directory, language["directory"], self.filename + ".mkv" );
                 if os.path.exists(file_final):
                     continue;
-                i = 0;
-                for legenda in self.legendas:
-                    i = i + 1;
-                    self.__make_video__(legenda, language);
-                    print(str(len(self.legendas)), "/", i);
+                file_final = os.path.join( self.directory, language["directory"], self.filename + ".mp4" );
+                if os.path.exists(file_final):
+                    continue;
+                #for legenda in self.legendas:
+                for i in range(len(self.legendas)):
+                    if i < len(self.legendas) - 1:
+                        self.legendas[i].fim_milisegundo = self.legendas[i + 1].inicio_milisegundo;
+                    #objeto = threading.Thread(target=self.__make_video__, args=(self.legendas[i], language,));
+                    #objeto.start();
+                    #semaforo.append(objeto);
+                    #if len(semaforo) >= self.project.max_threads:
+                    #    for item in semaforo:
+                    #        item.join();
+                    #    for i in range(len(semaforo)):
+                    #        semaforo[i] = None;
+                    #    semaforo = [];   
+                    self.__make_video__(self.legendas[i], language);
+                    print(str(len(self.legendas) - 1), "/", i);
                 # se for multi thread tem que esperar as threads aqui....
+                #for item in semaforo:
+                #    item.join();
                 with open("/tmp/"+ self.id +".txt", "w") as f:
+                    contador_slice_video = 0; # para contar quantos peda´cos ja foram adicionados para que eu possa
+                    # posicionar a propaganda no video
                     for legenda in self.legendas:
+                        contador_slice_video = contador_slice_video + 1;
+                        if contador_slice_video == 6:
+                            f.write("file '" + os.path.expandvars("$HOME/desenv/nocopyright/data/AJUDA_en.mkv") + "'\n");
                         path_buffer = "/tmp/video_legenda_" + language["language"] + "_" + legenda.id + ".mkv";
                         if os.path.exists(path_buffer):
                             f.write("file '" + path_buffer + "'\n");
@@ -151,6 +181,7 @@ class Video:
                 if not os.path.exists(dir_final):
                     os.makedirs(dir_final, exist_ok=True);
                 shutil.move('/tmp/final_' + language["language"] +"_"+ self.id + '.mkv', file_final )
+            self.to_mp4(delete_mkv=False)
             return True;
         except:
             traceback.print_exc();
@@ -171,12 +202,14 @@ class Video:
             os.unlink("/tmp/"+ self.id +".txt");
 
     def to_mp4(self, delete_mkv=False):
-        path_mp4 = os.path.join(self.directory, self.filename) + ".mp4";
-        print("\033[91mMP4: ", path_mp4, "\033[0m");
-        if os.path.exists( os.path.join(self.directory, self.filename + ".mkv")   ) and not os.path.exists(path_mp4):
-            os.system("ffmpeg -i '"+ os.path.join(self.directory, self.filename + ".mkv") +"' '"+ path_mp4 + "' > /dev/null 2>&1" ) ;
-        if delete_mkv == True and os.path.exists(os.path.join(self.directory, self.filename + ".mkv")):
-            os.unlink( os.path.join(self.directory, self.filename + ".mkv") );
+        for language in self.project.languages:
+            path_mp4 = os.path.join(self.directory, language["directory"] ,self.filename) + ".mp4";
+            path_mkv = os.path.join(self.directory, language["directory"] ,self.filename) + ".mkv";
+            if os.path.exists( path_mkv  ) and not os.path.exists( path_mp4 ):
+                os.system("ffmpeg -i '"+ path_mkv +"' '"+ path_mp4 + "' > /dev/null 2>&1" ) ;
+            if os.path.exists( path_mkv ) and os.path.exists( path_mp4 ):
+                print("REMOVENDO: ", path_mkv);
+                os.unlink( path_mkv );
 
     @staticmethod
     def load(project, path_dir, legenda_none=True):
@@ -216,9 +249,9 @@ class Legenda:
         if self.texto[-1] == ".":
             self.texto = self.texto[:-1].strip();
     
-    def make_video(self, path_video, to_language):
+    def make_video(self, path_video, to_language, effects=[]):
         translated_text = self.traducoes[to_language["language"]];
-        path_mp3 = self.make_audio(translated_text, to_language, to_language["engine"]);
+        path_mp3 = self.make_audio(translated_text, to_language, to_language["engine"], effects=effects);
         if path_mp3 != None:
             path_out = "/tmp/video_legenda_" + to_language["language"] + "_" + self.id + ".mkv";
             insert_audio_in_video(path_video, path_mp3, path_out, int(self.inicio_milisegundo/1000), int( self.fim_milisegundo/1000 ) )
@@ -226,52 +259,45 @@ class Legenda:
             return path_out;
         return None;
 
-    def make_audio(self, translated_text, to_language, engine_tts):
+    def make_audio(self, translated_text, to_language, engine_tts, effects=[]):
         path_mp3 = "/tmp/" + to_language["language"] + "_" + self.id + ".mp3";
         if engine_tts == "google":
             gravar_google( translated_text, path_mp3);
-            return path_mp3;
-        if engine_tts == "gtts":
+        elif engine_tts == "gtts":
             gravar_gtts(   translated_text, path_mp3);
-            return path_mp3;
-        if engine_tts == "kokoro":
+        elif engine_tts == "kokoro":
             gravar_kokoro( translated_text, to_language, path_mp3);
+        else:
+            return None;
+        for effect in effects:
+            path_mp3_buffer = "/tmp/effect_" + to_language["language"] + "_" + self.id + ".mp3";
+            command = "ffmpeg -i '"+ path_mp3 +"' -af 'rubberband=tempo=1.0:pitch="+ effect["value"] +":pitchq=quality' '" + path_mp3_buffer + "' 2>/dev/null";
+            #print("\033[97m", command, "\033[0m");
+            os.system( command );
+            if os.path.exists(path_mp3):
+                os.unlink(path_mp3);
+            shutil.move(path_mp3_buffer, path_mp3);
+        if os.path.exists( path_mp3 ):
             return path_mp3;
         return None;
 
     def translate(self, from_language, to_language):
-        from_code = from_language;
-        to_code = to_language["language"]
-        #argostranslate.package.update_package_index()
-        #available_packages = argostranslate.package.get_available_packages()
-        #package_to_install = next(
-        #    filter(
-        #        lambda x: x.from_code == from_code and x.to_code == to_code, available_packages
-        #    )
-        #)
-        #argostranslate.package.install_from_path(package_to_install.download())
-        #print(self.texto, from_code, to_code);
-        self.traducoes[to_language["language"]] = argostranslate.translate.translate(self.texto, from_code, to_code)
-        return self.traducoes[to_language["language"]];
-        # '¡Hola Mundo!'
-        #from_index = None;
-        #if from_language == "en":
-        #    from_index = 0;
-        #if from_language == "pt":
-        #    from_index = 1;
-        #if from_language == "es":
-        #    from_index = 2;
-        #to_index = None;
-        #if to_language["language"] == "en":
-        #    to_index = 0;
-        #if to_language["language"] == "pt":
-        #    to_index = 1;
-        #if to_language["language"] == "es":
-        #    to_index = 2;
-        ##https://pypi.org/project/argostranslate/
-        #translation_model = installed_languages[ from_index ].get_translation(installed_languages[ to_index ])
-        #self.traducoes[to_language["language"]] = translation_model.translate( self.texto );
-        #return self.traducoes[to_language["language"]];
+        try:
+            from_code = from_language;
+            to_code = to_language["language"];
+            print(from_code, "->", to_code, ": ");
+            if to_code == from_code:
+                self.traducoes[to_language["language"]] = self.texto;
+            else:
+                if to_code == "en" or from_code == "en":
+                    self.traducoes[to_language["language"]] = argostranslate.translate.translate(self.texto, from_code, to_code);
+                else:
+                    buffer_traduzido = self.traducoes[to_language["language"]] = argostranslate.translate.translate(self.texto, from_code, "en");
+                    self.traducoes[to_language["language"]] = argostranslate.translate.translate( buffer_traduzido , "en", to_code);
+            return self.traducoes[to_language["language"]];
+        except:
+            traceback.print_exc();
+            return None;
 
     def frame_start(self):
         return int((self.fps / 1000) * self.inicio_milisegundo );
@@ -412,7 +438,7 @@ def insert_audio_in_video(path_video_base, path_audio, path_out, second_start, s
         path_buffer_sem_audio = "/tmp/" + str(uuid.uuid4()) + ".mkv";
         #path_buffer_com_audio = "/tmp/COM_audio" + str(uuid.uuid4()) + ".mkv";
         path_buffer_com_audio = path_out;
-        total_frames_audio = mp3_total_frames( path_audio, 30 ); #TODO arquivo nao existe...
+        total_frames_audio = mp3_total_frames( path_audio, fps ); #TODO arquivo nao existe...
         total_frames_video = frame_end - frame_start;
         diferenca_quadros = abs( total_frames_video - total_frames_audio  );
         quadro_mod = 0;
