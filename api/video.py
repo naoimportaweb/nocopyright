@@ -190,8 +190,8 @@ class Video:
                     # posicionar a propaganda no video
                     for legenda in self.legendas:
                         contador_slice_video = contador_slice_video + 1;
-                        if contador_slice_video == 6:
-                            f.write("file '" + os.path.expandvars("$HOME/desenv/nocopyright/data/AJUDA_en.mkv") + "'\n");
+                        #if contador_slice_video == 6:
+                        #    f.write("file '" + os.path.expandvars("$HOME/desenv/nocopyright/data/AJUDA_en.mkv") + "'\n");
                         path_buffer = "/tmp/video_legenda_" + language["language"] + "_" + legenda.id + ".mkv";
                         if os.path.exists(path_buffer):
                             f.write("file '" + path_buffer + "'\n");
