@@ -57,6 +57,7 @@ class Video:
         self.tmp_path = "/tmp/file_" + self.id + ".kvm"
         cam = cv2.VideoCapture( path_video );
         self.fps = cam.get(cv2.CAP_PROP_FPS);
+        self.started = True;
 
         self.THREADS_TRADUTOR_CONTADOR  =  0;
         self.THREADS_TRADUTOR_MAX       = 10;
@@ -69,7 +70,22 @@ class Video:
             path_language = os.path.join( self.directory, language["directory"]);
             if not os.path.exists(path_language):
                 os.makedirs( path_language , exist_ok=True);  
-    def existe(self):
+            #if self.existe():
+            #    self.started = False;
+    def existe(self, language_dir = None):
+        if language_dir == None:
+            for language in self.project.languages:
+                dir_final = os.path.join( self.directory, language["directory"] );
+                file_mkv = os.path.join( dir_final, self.filename + ".mkv");
+                file_mp4 = os.path.join( dir_final, self.filename + ".mp4");
+                print(os.path.exists(file_mp4), file_mp4);
+                if not os.path.exists(file_mp4):
+                    return False;
+            return True;
+        else:
+            dir_final = os.path.join( self.directory, language_dir );
+            file_mp4 = os.path.join( dir_final, self.filename + ".mp4");
+            return os.path.exists(file_mp4);
         #for language in self.project.languages:
         #    dir_final = os.path.join( self.directory, language["directory"] );
         #    if not os.path.exists(dir_final):
@@ -80,7 +96,7 @@ class Video:
         #    file = os.path.join( dir_final, self.filename + ".mp4");
         #    if os.path.exists(file):
         #        return True;
-        return False;
+        #return False;
 
     def legendar(self):
         if os.path.exists( self.path_final_vtt ):
@@ -107,6 +123,8 @@ class Video:
         try:
             semaforo = [];
             for language in self.project.languages:
+                if self.existe(language_dir=language["directory"]):
+                    continue;
                 for legenda in self.legendas:
                     objeto = threading.Thread(target=self.__translate__, args=(legenda, language,));
                     objeto.start();
@@ -141,6 +159,8 @@ class Video:
         try:
             semaforo = [];
             for language in self.project.languages:
+                if self.existe(language_dir=language["directory"]):
+                    continue;
                 file_final = os.path.join( self.directory, language["directory"], self.filename + ".mkv" );
                 if os.path.exists(file_final):
                     continue;
@@ -206,7 +226,8 @@ class Video:
             path_mp4 = os.path.join(self.directory, language["directory"] ,self.filename) + ".mp4";
             path_mkv = os.path.join(self.directory, language["directory"] ,self.filename) + ".mkv";
             if os.path.exists( path_mkv  ) and not os.path.exists( path_mp4 ):
-                os.system("ffmpeg -i '"+ path_mkv +"' '"+ path_mp4 + "' > /dev/null 2>&1" ) ;
+                os.system("ffmpeg -i '"+ path_mkv +"' -c:v libx264 -pix_fmt yuv420p -c:a copy '"+ path_mp4 + "'  > /dev/null 2>&1")
+                #os.system("ffmpeg -i '"+ path_mkv +"' '"+ path_mp4 + "' > /dev/null 2>&1" ) ;
             if os.path.exists( path_mkv ) and os.path.exists( path_mp4 ):
                 print("REMOVENDO: ", path_mkv);
                 os.unlink( path_mkv );
@@ -262,7 +283,7 @@ class Legenda:
     def make_audio(self, translated_text, to_language, engine_tts, effects=[]):
         path_mp3 = "/tmp/" + to_language["language"] + "_" + self.id + ".mp3";
         if engine_tts == "google":
-            gravar_google( translated_text, path_mp3);
+            gravar_google( translated_text, to_language["voice"], to_language["languageCode"], path_mp3);
         elif engine_tts == "gtts":
             gravar_gtts(   translated_text, path_mp3);
         elif engine_tts == "kokoro":
@@ -271,7 +292,7 @@ class Legenda:
             return None;
         for effect in effects:
             path_mp3_buffer = "/tmp/effect_" + to_language["language"] + "_" + self.id + ".mp3";
-            command = "ffmpeg -i '"+ path_mp3 +"' -af 'rubberband=tempo=1.0:pitch="+ effect["value"] +":pitchq=quality' '" + path_mp3_buffer + "' 2>/dev/null";
+            command = "ffmpeg -i '"+ path_mp3 +"' -af 'rubberband=tempo=1.0:pitch="+ effect["value"] +":pitchq=quality' '" + path_mp3_buffer + "' > /dev/null 2>&1";
             #print("\033[97m", command, "\033[0m");
             os.system( command );
             if os.path.exists(path_mp3):
@@ -384,14 +405,14 @@ def transcrever(path_video):
             f.write(f"{text}\n\n")
     return path_vtt;
 
-def gravar_google(text, path_mp3):
+def gravar_google(text, voice, languageCode, path_mp3):
     if text[-1] == ".":
         text = text[:-1];
     text = text.replace(". ", " ");
     url = "https://texttospeech.googleapis.com/v1beta1/text:synthesize"
     data = {
             "input": {"text": text},
-            "voice": {"name":  "pt-BR-Chirp3-HD-Charon", "languageCode": "pt-BR"},
+            "voice": {"name":  voice, "languageCode": languageCode},
             "audioConfig": {"audioEncoding": "MP3"}
           };
     headers = {"content-type": "application/json", "X-Goog-Api-Key": CONFIG_GOOGLE["key"] }
@@ -478,7 +499,8 @@ def insert_audio_in_video(path_video_base, path_audio, path_out, second_start, s
         video_output = None;
         video_base = None;
         fourcc = None;
-        command = "ffmpeg -i '"+ path_buffer_sem_audio +"' -i '"+ path_audio +"' -c copy -map 0:v:0 -map 1:a:0 '"+ path_buffer_com_audio +"'  > /dev/null 2>&1"
+        #command = "ffmpeg -i '"+ path_buffer_sem_audio +"' -i '"+ path_audio +"' -c copy -map 0:v:0 -map 1:a:0 '"+ path_buffer_com_audio +"'  > /dev/null 2>&1"
+        command = "ffmpeg -i '"+ path_buffer_sem_audio +"' -i '"+ path_audio +"' -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 '"+ path_buffer_com_audio +"'  > /dev/null 2>&1" 
         os.system(command);
         if os.path.exists(path_buffer_sem_audio):
             os.unlink( path_buffer_sem_audio );

@@ -112,6 +112,8 @@ def novo_projeto(diretorio, transcribe, translate, make):
     try:
         for buffer in p.videos:
             #if transcribe:
+            #if not buffer.started == True:
+            #    continue;
             buffer.legendar();
             #if translate:
             buffer.translate();
@@ -134,7 +136,6 @@ while True:
                     threads_list.append( project_thread );
         for project_thread in threads_list:
             project_thread.join();
-        break;
     except:
         print("mais uma volta");
     finally:
