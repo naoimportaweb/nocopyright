@@ -19,4 +19,3 @@ with open(INDEX_JSON) as index_file:
         links = metadata["links"]
         link = links[0]
         subprocess.run(["wget", "-O", model_path , link, "-P", DOWNLOAD_DIR])
-        #/home/uell/tmp/argos/translate-th_en-1_9.argosmodel

@@ -1,31 +1,22 @@
-import os, sys, traceback, time;
-import threading, time, json, argostranslate;
+import os, sys, traceback, time, threading, time, json, argostranslate;
 
 from pathlib import Path
 from argostranslate import package, translate
 
 ROOT = os.path.expandvars("$HOME/desenv/nocopyright/");
 sys.path.append(ROOT);
+
+raizes = [ os.path.expandvars("$HOME/cursos/") ];
+ARGOS_DIR = os.path.expandvars("$HOME/tmp/argos/");
+
 from api.video import Video;
 
-engines = ["google", "gtts", "kokoro"];
-raizes = [ os.path.expandvars("$HOME/cursos/") ];
 CONTADOR_THREADS = 0;
-TOTAL_THREADS = 1 ; #int( sys.argv[1] );
+TOTAL_THREADS = 1;
 
 class VideoUdemy(Video):
     def __init__(self, path_video, legenda=None):
         super().__init__(path_video, legenda=legenda);
-
-
-ARGOS_DIR = os.path.expandvars("$HOME/tmp/argos/");
-#models = os.listdir( ARGOS_DIR );
-#for model in models:
-#    if model.find(".argosmodel") < 0:
-#        continue;
-#    package.install_from_path( os.path.join( ARGOS_DIR, model  ) );
-#installed_languages = translate.get_installed_languages();
-#print( "Tradução disponível para: ", [str(lang) for lang in installed_languages] );
 
 class Project():
     def __init__(self, path_directory):
@@ -106,18 +97,12 @@ def diretorios_recursivos(diretorio ):
     return lista;
 
 def novo_projeto(diretorio, transcribe, translate, make):
-    print(diretorio);
     p = Project(diretorio);
     p.start();
     try:
         for buffer in p.videos:
-            #if transcribe:
-            #if not buffer.started == True:
-            #    continue;
             buffer.legendar();
-            #if translate:
             buffer.translate();
-            #if make:
             buffer.make_video();
             buffer.to_mp4(delete_mkv=False);
     finally:
@@ -142,50 +127,3 @@ while True:
         print("pausa");
         time.sleep(120);
 
-
-#def make_video(video):
-#    global CONTADOR_THREADS;
-#    try:
-#        print("\033[96m", video.path_video, "\033[0m");
-#        video.legendar();
-#        video.translate("pt");
-#        video.make_video("pt", sys.argv[2]);
-#        video.to_mp4(delete_mkv=True);
-#        video = None;
-#    except KeyboardInterrupt:
-#        exit(1)
-#    except:
-#        traceback.print_exc();
-#    finally:
-#        CONTADOR_THREADS = CONTADOR_THREADS - 1;
-
-#while True:
-#    try:
-#        diretorios = [];
-#        for raiz in raizes:
-#            diretorios.append( raiz );
-#            diretorios = diretorios + diretorios_recursivos(raiz);
-#        diretorios.sort();
-#        for diretorio in diretorios:
-#            if not os.path.exists(diretorio):
-#                continue;
-#            videos = VideoUdemy.load( diretorio );
-#            for video in videos:
-#                try:
-#                    if video.existe():
-#                        continue;
-#                    while TOTAL_THREADS <= CONTADOR_THREADS:
-#                        time.sleep(10);
-#                    CONTADOR_THREADS = CONTADOR_THREADS + 1;
-#                    video_thread = threading.Thread(target=make_video, args=(video,))
-#                    video_thread.start()       
-#                except KeyboardInterrupt:
-#                    exit(1)
-#                except:
-#                    traceback.print_exc();
-#                finally:
-#                    video.clear();
-#    except KeyboardInterrupt:
-#        exit(1)
-#    except:
-#        traceback.print_exc();
