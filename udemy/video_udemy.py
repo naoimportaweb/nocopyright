@@ -102,7 +102,9 @@ def novo_projeto(diretorio, transcribe, translate, make):
     try:
         for buffer in p.videos:
             buffer.legendar();
+            print("legendado....");
             buffer.translate();
+            print("traduzido");
             buffer.make_video();
             buffer.to_mp4(delete_mkv=False);
     finally:

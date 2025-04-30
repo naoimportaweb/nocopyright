@@ -101,19 +101,22 @@ class Video:
             semaforo = [];
             for language in self.project.languages:
                 if self.existe(language_dir=language["directory"]):
+                    print("Já existe um soutpu para: ", self.filename);
                     continue;
                 for legenda in self.legendas:
-                    objeto = threading.Thread(target=self.__translate__, args=(legenda, language,));
-                    objeto.start();
-                    semaforo.append(objeto);
-                    if len(semaforo) >= 10:
-                        for item in semaforo:
-                            item.join();
-                        for i in range(len(semaforo)):
-                            semaforo[i] = None;
-                        semaforo = [];
-            for item in semaforo:
-                item.join();
+                    self.__translate__(legenda, language);
+            #    for legenda in self.legendas:
+            #        objeto = threading.Thread(target=self.__translate__, args=(legenda, language,));
+            #        objeto.start();
+            #        semaforo.append(objeto);
+            #        if len(semaforo) >= 10:
+            #            for item in semaforo:
+            #                item.join();
+            #            for i in range(len(semaforo)):
+            #                semaforo[i] = None;
+            #            semaforo = [];
+            #for item in semaforo:
+            #    item.join();
             for language in self.project.languages:
                 path_legenda = os.path.join( self.directory, language["directory"], self.filename + ".vtt" );
                 if not os.path.exists( path_legenda ):
@@ -133,6 +136,7 @@ class Video:
 
     def make_video(self):
         try:
+            print("Criando vídeo para: ", self.filename);
             semaforo = [];
             for language in self.project.languages:
                 if self.existe(language_dir=language["directory"]):
@@ -235,42 +239,53 @@ class Legenda:
             self.texto = self.texto[:-1].strip();
     
     def make_video(self, path_video, to_language, effects=[]):
-        translated_text = self.traducoes[to_language["language"]];
-        path_mp3 = self.make_audio(translated_text, to_language, to_language["engine"], effects=effects);
-        if path_mp3 != None:
-            path_out = "/tmp/video_legenda_" + to_language["language"] + "_" + self.id + ".mkv";
-            insert_audio_in_video(path_video, path_mp3, path_out, int(self.inicio_milisegundo/1000), int( self.fim_milisegundo/1000 ) )
-            os.unlink(path_mp3);
-            return path_out;
-        print("\033[91m", "FALHA NAO FOI ENCONTRADO UM AUDIO", "\033[0m");
+        for rodada in range(5):
+            translated_text = self.traducoes[to_language["language"]];
+            path_mp3 = self.make_audio(translated_text, to_language, to_language["engine"], effects=effects);
+            if path_mp3 != None:
+                path_out = "/tmp/video_legenda_" + to_language["language"] + "_" + self.id + ".mkv";
+                if os.path.exists(path_out):
+                    return path_out; # já existe pois pode estar tentando novamente....
+                insert_audio_in_video(path_video, path_mp3, path_out, int(self.inicio_milisegundo/1000), int( self.fim_milisegundo/1000 ) )
+                if os.path.exists(path_out):
+                    os.unlink(path_mp3);
+                    return path_out;
+                #else:
+                #    print("\033[91m", "FALHA NAO FOI ENCONTRADO UM VIDEO, quadros:", str(int(self.inicio_milisegundo/1000)), "->" , str(int( self.fim_milisegundo/1000 )), "\033[0m");
+            else:
+                print("\033[91m", "FALHA NAO FOI ENCONTRADO UM AUDIO", "\033[0m");
         return None;
 
     def make_audio(self, translated_text, to_language, engine_tts, effects=[]):
-        path_mp3 = "/tmp/" + to_language["language"] + "_" + self.id + ".mp3";
-        if engine_tts == "google":
-            gravar_google( translated_text, to_language["voice"], to_language["languageCode"], path_mp3);
-        elif engine_tts == "gtts":
-            gravar_gtts(   translated_text, path_mp3);
-        elif engine_tts == "kokoro":
-            gravar_kokoro( translated_text, to_language, path_mp3);
-        else:
-            return None;
-        if to_language.get("effects") != None:
-            for effect in to_language["effects"]:
-                path_mp3_buffer = "/tmp/effect_" + to_language["language"] + "_" + self.id + ".mp3";
-                command = "ffmpeg -i '"+ path_mp3 +"' -af 'rubberband=tempo=1.0:pitch="+ effect["value"] +":pitchq=quality' '" + path_mp3_buffer + "' > /dev/null 2>&1";
-                os.system( command );
-                if os.path.exists(path_mp3):
-                    os.unlink(path_mp3);
-                shutil.move(path_mp3_buffer, path_mp3);
-        if os.path.exists( path_mp3 ):
-            return path_mp3;
+        for tentativas in range(5):
+            path_mp3 = "/tmp/" + to_language["language"] + "_" + self.id + ".mp3";
+            if os.path.exists(path_mp3):
+                return path_mp3; #já existe....
+            if engine_tts == "google":
+                gravar_google( translated_text, to_language["voice"], to_language["languageCode"], path_mp3);
+            elif engine_tts == "gtts":
+                gravar_gtts(   translated_text, path_mp3);
+            elif engine_tts == "kokoro":
+                gravar_kokoro( translated_text, to_language, path_mp3);
+            else:
+                return None;
+            #if to_language.get("effects") != None:
+            #    for effect in to_language["effects"]:
+            #        path_mp3_buffer = "/tmp/effect_" + to_language["language"] + "_" + self.id + ".mp3";
+            #        command = "ffmpeg -i '"+ path_mp3 +"' -af 'rubberband=tempo=1.0:pitch="+ effect["value"] +":pitchq=quality' '" + path_mp3_buffer + "' > /dev/null 2>&1";
+            #        os.system( command );
+            #        if os.path.exists(path_mp3):
+            #            os.unlink(path_mp3);
+            #        shutil.move(path_mp3_buffer, path_mp3);
+            if os.path.exists( path_mp3 ):
+                return path_mp3;
         return None;
 
     def translate(self, from_language, to_language):
         try:
             from_code = from_language;
             to_code = to_language["language"];
+            print(from_code, "->", to_code, self.texto);
             if to_code == from_code:
                 self.traducoes[to_language["language"]] = self.texto;
             else:
@@ -435,8 +450,9 @@ def insert_blank_audio(path_video_base, path_out, second_start, second_end):
         video_base = None;
         fourcc = None;
 
-        command = "ffmpeg -i '"+ path_buffer_sem_audio +"' -i '"+ path_audio_nulo +"' -c copy -map 0:v:0 -map 1:a:0 '"+ path_buffer_com_audio +"' > /dev/null 2>&1"
-        os.system(command);
+        #command = "ffmpeg -i '"+ path_buffer_sem_audio +"' -i '"+ path_audio_nulo +"' -c copy -map 0:v:0 -map 1:a:0 '"+ path_buffer_com_audio +"' > /dev/null 2>&1"
+        #os.system(command);
+        shutil.move(path_buffer_sem_audio, path_buffer_com_audio);
         if os.path.exists(path_buffer_sem_audio):
             os.unlink( path_buffer_sem_audio );
         return path_buffer_com_audio;
