@@ -144,8 +144,8 @@ class Video:
                 file_final = os.path.join( self.directory, language["directory"], self.filename + ".mkv" );
                 if os.path.exists(file_final):
                     continue;
-                file_final = os.path.join( self.directory, language["directory"], self.filename + ".mp4" );
-                if os.path.exists(file_final):
+                file_final_mp4 = os.path.join( self.directory, language["directory"], self.filename + ".mp4" );
+                if os.path.exists(file_final_mp4):
                     continue;
                 with open("/tmp/"+ self.id +".txt", "w") as f:
                     for i in range(len(self.legendas)):
@@ -195,11 +195,11 @@ class Video:
         for language in self.project.languages:
             path_mp4 = os.path.join(self.directory, language["directory"] ,self.filename) + ".mp4";
             path_mkv = os.path.join(self.directory, language["directory"] ,self.filename) + ".mkv";
-            if os.path.exists( path_mkv  ) and not os.path.exists( path_mp4 ):
-                os.system("ffmpeg -i '"+ path_mkv +"' -c:v libx264 -pix_fmt yuv420p -c:a copy '"+ path_mp4 + "'  > /dev/null 2>&1")
-                #os.system("ffmpeg -i '"+ path_mkv +"' '"+ path_mp4 + "' > /dev/null 2>&1" ) ;
-            if os.path.exists( path_mkv ) and os.path.exists( path_mp4 ):
-                os.unlink( path_mkv );
+            if os.path.exists( path_mkv  ):
+                if os.path.exists( path_mp4 ):
+                    os.unlink(path_mp4);
+                #os.system("ffmpeg -i '"+ path_mkv +"' -c:v libx264 -pix_fmt yuv420p -c:a copy '"+ path_mp4 + "'  > /dev/null 2>&1")
+                os.system("ffmpeg -i '"+ path_mkv +"' '"+ path_mp4 + "' " ) ; #> /dev/null 2>&1
 
     @staticmethod
     def load(project, path_dir, legenda_none=True):
@@ -499,7 +499,7 @@ def insert_audio_in_video(path_video_base, path_audio, path_out, second_start, s
                         video_output.write( image );
                         adicionados = adicionados + 1;
                 else:
-                    if i % quadro_mod == 0:
+                    if i % quadro_mod != 0:
                         video_output.write( image );
                         adicionados = adicionados + 1;
         video_output.release();
