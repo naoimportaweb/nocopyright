@@ -14,7 +14,7 @@ from IPython.display import display, Audio
 #from googletrans import Translator
 #https://gtts.readthedocs.io/en/latest/module.html#localized-accents
 from gtts import gTTS  # LIXO QUE VOU RREMOVER, ESSA BOSTA NÁO É OFF
-from moviepy.editor import *    # É UMA BOSTA CHEIA DE MEMORY LEAK
+#from moviepy.editor import *    # É UMA BOSTA CHEIA DE MEMORY LEAK
 from faster_whisper import WhisperModel
 
 
@@ -154,29 +154,6 @@ class Legenda:
         return legendas;
 
 # ----------------- grande gambibarra --------------------- CANSADO PRA CARALEO
-
-def transcrever(path_video):
-    start_datet_time = dt.now();
-    elapsed = None;
-    end = None;
-
-    path_vtt = os.path.join("/tmp/", str(uuid.uuid4()) + ".vtt");
-    model_size = "large"
-    model = WhisperModel(model_size, device="cpu", compute_type="int8")
-    segments, info = model.transcribe(path_video, beam_size=5)
-    with open(path_vtt, "w") as f:
-        for segment in segments:
-            end_datet_time = dt.now();
-            elapsed = end_datet_time - start_datet_time;
-
-            sys.stdout.write( "\r\tSEGMENT: %.2fs -> %.2fs \t Processamento: %.2fs" % (segment.start, segment.end, elapsed.seconds) );
-            sys.stdout.flush();
-            start = segment.start; #= str(segment.start).replace(".", ":") + ".0";
-            end   = segment.end; # str(segment.end  ).replace(".", ":") + ".0";
-            text = segment.text.strip();
-            f.write(f"{start:.2f} --> {end:.2f}\n")
-            f.write(f"{text}\n\n")
-    return path_vtt;
 
 def gravar_google(text, voice, languageCode, path_mp3):
     if text[-1] == ".":

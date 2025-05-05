@@ -4,6 +4,8 @@ ROOT = os.path.expandvars("$HOME/desenv/videotradutor/");
 sys.path.append(ROOT);
 
 from api.legenda import Legenda;
+from datetime import datetime as dt
+from faster_whisper import WhisperModel
 
 #https://www.argosopentech.com/argospm/index/
 # 1 - Palavras reservadas  <<< dicionario de palavras
@@ -219,3 +221,27 @@ def insert_blank_audio(path_video_base, path_out, second_start, second_end):
     except:
         traceback.print_exc();
     return False;
+
+
+def transcrever(path_video):
+    start_datet_time = dt.now();
+    elapsed = None;
+    end = None;
+
+    path_vtt = os.path.join("/tmp/", str(uuid.uuid4()) + ".vtt");
+    model_size = "large"
+    model = WhisperModel(model_size, device="cpu", compute_type="int8")
+    segments, info = model.transcribe(path_video, beam_size=5)
+    with open(path_vtt, "w") as f:
+        for segment in segments:
+            end_datet_time = dt.now();
+            elapsed = end_datet_time - start_datet_time;
+
+            sys.stdout.write( "\r\tSEGMENT: %.2fs -> %.2fs \t Processamento: %.2fs" % (segment.start, segment.end, elapsed.seconds) );
+            sys.stdout.flush();
+            start = segment.start; #= str(segment.start).replace(".", ":") + ".0";
+            end   = segment.end; # str(segment.end  ).replace(".", ":") + ".0";
+            text = segment.text.strip();
+            f.write(f"{start:.2f} --> {end:.2f}\n")
+            f.write(f"{text}\n\n")
+    return path_vtt;
