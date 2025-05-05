@@ -3,7 +3,7 @@ import os, sys, traceback, time, threading, time, json, argostranslate;
 #from pathlib import Path
 #from argostranslate import package, translate
 
-ROOT = os.path.expandvars("$HOME/desenv/nocopyright/");
+ROOT = os.path.expandvars("$HOME/desenv/videotradutor/");
 sys.path.append(ROOT);
 
 raizes = [ os.path.expandvars("$HOME/cursos/") ];

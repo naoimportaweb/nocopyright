@@ -1,6 +1,6 @@
 import sys, os;
 
-ROOT = os.path.expandvars("$HOME/desenv/nocopyright/");
+ROOT = os.path.expandvars("$HOME/desenv/videotradutor/");
 sys.path.append(ROOT);
 
 from api.video import Video;

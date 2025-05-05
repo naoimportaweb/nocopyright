@@ -1,7 +1,7 @@
 import sys, os;
 import os, sys, traceback, json, argostranslate;
 
-ROOT = os.path.expandvars("$HOME/desenv/nocopyright/");
+ROOT = os.path.expandvars("$HOME/desenv/videotradutor/");
 sys.path.append(ROOT);
 
 from pathlib import Path

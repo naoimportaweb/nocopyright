@@ -1,6 +1,6 @@
 import os, sys, traceback, re, cv2, time, uuid, shutil, json;
 
-ROOT = os.path.expandvars("$HOME/desenv/nocopyright/");
+ROOT = os.path.expandvars("$HOME/desenv/videotradutor/");
 sys.path.append(ROOT);
 
 from api.legenda import Legenda;
@@ -195,7 +195,6 @@ def insert_blank_audio(path_video_base, path_out, second_start, second_end):
         frame_start = int(second_start  * fps);
         frame_end   = int(second_end    * fps);
         path_buffer_sem_audio   = "/tmp/" + str(uuid.uuid4()) + ".mkv";
-        path_audio_nulo         = "/home/uell/desenv/nocopyright/data/buffer.mp3";
         path_buffer_com_audio   = path_out;
         total_frames_video = frame_end - frame_start;
         video_base.set(cv2.CAP_PROP_POS_FRAMES, frame_start - 1);  #https://stackoverflow.com/questions/33650974/opencv-python-read-specific-frame-using-videocapture
@@ -213,8 +212,6 @@ def insert_blank_audio(path_video_base, path_out, second_start, second_end):
         video_base = None;
         fourcc = None;
 
-        #command = "ffmpeg -i '"+ path_buffer_sem_audio +"' -i '"+ path_audio_nulo +"' -c copy -map 0:v:0 -map 1:a:0 '"+ path_buffer_com_audio +"' > /dev/null 2>&1"
-        #os.system(command);
         shutil.move(path_buffer_sem_audio, path_buffer_com_audio);
         if os.path.exists(path_buffer_sem_audio):
             os.unlink( path_buffer_sem_audio );

@@ -8,7 +8,7 @@ DOWNLOAD_DIR = os.path.expandvars("$HOME/tmp/argos/");
 if not os.path.exists( DOWNLOAD_DIR ):
     os.makedirs(DOWNLOAD_DIR, exist_ok=True);
 
-INDEX_JSON = os.path.join(os.path.expandvars("$HOME/desenv/nocopyright/data/"), "index.json");
+INDEX_JSON = os.path.join(os.path.expandvars("$HOME/desenv/videotradutor/data/"), "index.json");
 with open(INDEX_JSON) as index_file:
     index = json.load(index_file)
     for metadata in index:

@@ -22,14 +22,14 @@ pip3 install faster-whisper
 if [ ! -d $HOME/desenv ]
 then
     mkdir $HOME/desenv
-    wget -O /tmp/nocopiright.zip https://codeload.github.com/naoimportaweb/nocopyright/zip/refs/heads/main
+    wget -O /tmp/nocopiright.zip https://codeload.github.com/naoimportaweb/videotradutor/zip/refs/heads/main
     cd /tmp/
     unzip nocopiright.zip
 
     cd $HOME/desenv
-    mkdir $HOME/desenv/nocopyright
-    cp -r /tmp/nocopyright-main/* $HOME/desenv/nocopyright
-    python3 $HOME/desenv/nocopyright/api/argoshelp.py
+    mkdir $HOME/desenv/videotradutor
+    cp -r /tmp/videotradutor-main/* $HOME/desenv/videotradutor
+    python3 $HOME/desenv/videotradutor/api/argoshelp.py
 fi
 
 if [ ! -d $HOME/cursos ]
