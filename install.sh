@@ -29,8 +29,10 @@ then
     cd $HOME/desenv
     mkdir $HOME/desenv/videotradutor
     cp -r /tmp/videotradutor-main/* $HOME/desenv/videotradutor
-    python3 $HOME/desenv/videotradutor/api/argoshelp.py
+    
 fi
+# sempre atualizar o dicionario
+python3 $HOME/desenv/videotradutor/api/argoshelp.py
 
 if [ ! -d $HOME/cursos ]
 then
