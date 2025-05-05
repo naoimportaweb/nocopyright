@@ -10,19 +10,6 @@ raizes = [ os.path.expandvars("$HOME/cursos/") ];
 
 from api.projeto import Projeto;
 
-#def diretorios_recursivos(diretorio ):
-#    lista = [];
-#    buffers = os.listdir(diretorio);
-#    buffers.sort();
-#    for buffer in buffers:
-#        if buffer == "ptbr" or buffer == "eses" or buffer == "itit" or buffer == "enus":
-#            continue;
-#        path_buffer = os.path.join(diretorio, buffer);
-#        if os.path.isdir(path_buffer):
-#            lista.append(path_buffer);
-#            lista = lista + diretorios_recursivos(path_buffer);
-#    return lista;
-
 def novo_projeto(diretorio, transcribe, translate, make):
     while True:
         try:
@@ -42,9 +29,8 @@ def novo_projeto(diretorio, transcribe, translate, make):
             break;
         except:
             traceback.print_exc();
-        #finally:
-        #    time.sleep(300);
-        break;
+        finally:
+            time.sleep(300);
 
 def main():
     while True:
@@ -63,11 +49,9 @@ def main():
             break;
         except:
             print("mais uma volta");
-        #finally:
-        #    print("pausa");
-        #    time.sleep(120);
-        print("fim..");
-        break;
+        finally:
+            print("pausa");
+            time.sleep(120);
 
 
 if __name__ == "__main__":
