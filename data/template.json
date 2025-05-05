@@ -2,13 +2,13 @@
     "name" : "NOME DO PROJETO",
     "active" : false,
     "language" : "pt",
-    "max_threads" : 2,
     "languages" : [
-        {"language" : "en", "engine" : "kokoro", "voice" : "am_michael", "language_code" : "a", "directory" : "enus"},
-        {"language" : "pt", "engine" : "kokoro", "voice" : "pm_alex",    "language_code" : "p", "directory" : "ptbr"},  
-        {"language" : "es", "engine" : "kokoro", "voice" : "em_alex",    "language_code" : "e", "directory" : "eses"}
-    ],
-    "effects" : [
-        {"type" : "pitch", "value" : "0.95"}
+        {"language" : "en", "active" : false, "engine" : "kokoro", "voice" : "am_michael", "speed" : 1, "language_code" : "a", "directory" : "enus"},
+        {"language" : "pt", "active" : true, "engine" : "kokoro", "voice" : "pm_alex",    "speed" : 1, "language_code" : "p", "directory" : "ptbr",
+            "effects" : [
+                    {"type" : "pitch", "value" : "0.95"}
+            ]
+        },  
+        {"language" : "es", "active" : false, "engine" : "kokoro", "voice" : "em_alex",    "speed" : 1,  "language_code" : "e", "directory" : "eses"}
     ]
 }
