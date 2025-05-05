@@ -202,7 +202,7 @@ def gravar_gtts(text, path_mp3):
 
 def gravar_kokoro(text, language, path_mp3):
     pipeline = KPipeline(lang_code=language["language_code"], repo_id='hexgrad/Kokoro-82M');
-    generator = pipeline(text, speed=0.85, voice=language["voice"]);
+    generator = pipeline(text, speed=language["speed"], voice=language["voice"]);
     for i, (gs, ps, audio) in enumerate(generator):
         sf.write(path_mp3, audio, 24000);
     pipeline = None;

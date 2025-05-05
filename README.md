@@ -7,7 +7,12 @@ Video Tradutor é um projeto Python que proporciona um mecanismo de tradução d
 - Tradução;
 - Gravação;
 
-## Installation
+## Projetos que são referenciados
+
+- Kokoro TTS (Text to Speech): https://huggingface.co/hexgrad/Kokoro-82M
+- Faster Whisper (Speech to Text) : https://github.com/SYSTRAN/faster-whisper
+
+## Instalação
 
 Precisará de ter um Linux baseado em Debian com Python 3 instlado, precisa adicionar como super usuário:
 
@@ -26,7 +31,7 @@ chmod +x /tmp/install.sh
 /tmp/install.sh
 ```
 
-## License
+## Licença
 
 MIT
 
