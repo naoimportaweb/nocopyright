@@ -20,7 +20,7 @@ sudo apt install ffmpeg -y
 Depois executar o script install.sh como usuário normal:
 
 ```sh
-wget -O /tmp/install.sh https://raw.githubusercontent.com/naoimportaweb/nocopyright/refs/heads/main/install.sh
+wget -O /tmp/install.sh https://raw.githubusercontent.com/naoimportaweb/videotradutor/refs/heads/main/install.sh
 chmod +x /tmp/install.sh
 
 /tmp/install.sh
