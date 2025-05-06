@@ -104,7 +104,7 @@ class Legenda:
     def to_string(self):
         return str(self.frame_start()) + " -> " + str(self.frame_end()) + ": " + self.texto;
     def  do_work(self):
-        if self.texto == "<DELETE>":
+        if self.texto.strip() == "<DELETE>" or self.texto.strip() == "[Music]":
             return False;
         return True;
     def clear(self, language):
