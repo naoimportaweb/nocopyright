@@ -74,7 +74,7 @@ class Projeto():
             self.find_videos();
             buffer = None;
 
-
+# veja no diretorio teste/
 # DIRETORIO DO CURSO
 #       DIRETORIO DO MODULO
 #           VIDEO
