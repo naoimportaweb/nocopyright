@@ -1,0 +1,10 @@
+{
+    "name" : "exemplo",
+    "active" : true,
+    "language" : "pt",
+    "max_threads" : 10,
+    "languages" : [
+        {"active" : true, "speed" : 1, "language" : "pt", "active" : true, "engine" : "kokoro", "voice" : "pm_alex", "language_code" :    "p", "directory" : "ptbr"},
+        {"active" : true, "speed" : 1, "language" : "en", "active" : true, "engine" : "kokoro", "voice" : "am_adam", "language_code" : "a", "directory" : "enus"}
+    ]
+}
