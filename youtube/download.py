@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, traceback;
 
 from pytubefix import YouTube
 from youtube_transcript_api import YouTubeTranscriptApi
@@ -36,9 +36,12 @@ stream = YouTube( sys.argv[1] ).streams.filter( progressive=True )[0];
 buffer_lines = transcrever( url[url.rfind("=") + 1:] );
 
 with open(os.path.expandvars("$HOME/Downloads/") + stream.default_filename + ".vtt", "w") as f:
-	for buffer in buffer_lines:
-		f.write( str( buffer["start"] ) + ".0 --> " + str( buffer["end"] ) + ".0\n" );
-		f.write( buffer["text"] + "\n\n");
+    for i in range(len(buffer_lines)):
+        buffer = buffer_lines[i];
+        if i < len(buffer_lines) - 1:
+            buffer["end"] = buffer_lines[i + 1]["start"];
+        f.write( str( buffer["start"] ) + ".0 --> " + str( buffer["end"] ) + ".0\n" );
+        f.write( buffer["text"] + "\n\n");
 
 stream.download(output_path=os.path.expandvars("$HOME/Downloads/"))
 
