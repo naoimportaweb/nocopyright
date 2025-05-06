@@ -16,7 +16,7 @@ pip3 install argostranslate
 pip3 install opencv-python
 pip3 install gTTS googletrans==4.0.0-rc1 pygame
 pip3 install torch torchvision torchaudio
-
+pip3 install youtube_transcript_api
 pip3 install -U stable-ts
 pip3 install requests
 pip3 install faster-whisper
