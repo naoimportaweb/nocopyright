@@ -259,7 +259,8 @@ def insert_audio_in_video(path_video_base, path_audio, path_out, second_start, s
         video_output = None;
         video_base = None;
         fourcc = None;
-        command = "ffmpeg -i '"+ path_buffer_sem_audio +"' -i '"+ path_audio +"' -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 '"+ path_buffer_com_audio +"' > /dev/null 2>&1 " 
+        #command = "ffmpeg -i '"+ path_buffer_sem_audio +"' -i '"+ path_audio +"' -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 '"+ path_buffer_com_audio +"' > /dev/null 2>&1 " 
+        command = 'ffmpeg -i "'+ path_buffer_sem_audio +'" -i "'+ path_audio +'" -filter_complex " [1:0] apad " -shortest "'+ path_buffer_com_audio +'" > /dev/null 2>&1 '
         os.system(command);
         if os.path.exists(path_buffer_sem_audio):
             os.unlink( path_buffer_sem_audio );

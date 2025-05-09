@@ -198,7 +198,7 @@ def insert_blank_audio(path_video_base, path_out, second_start, second_end):
         frame_end   = int(second_end    * fps);
         path_buffer_sem_audio   = "/tmp/" + str(uuid.uuid4()) + ".mkv";
         path_buffer_com_audio   = path_out;
-        total_frames_video = frame_end - frame_start;
+        total_frames_video = int( (frame_end - frame_start) / 2);
         video_base.set(cv2.CAP_PROP_POS_FRAMES, frame_start - 1);  #https://stackoverflow.com/questions/33650974/opencv-python-read-specific-frame-using-videocapture
         frame_width =  int(video_base.get(3));
         frame_height = int(video_base.get(4));
